@@ -47,7 +47,7 @@ def test_evaluate_hand_computed():
 def test_default_ks_keys():
     y = np.array([0, 1, 0, 1])
     assert list(evaluate(y, np.arange(4.0))) == [
-        "AUPRC", "recall@100", "recall@200", "recall@n_pos", "baseline_AUPRC"]
+        "AUPRC", "recall@50", "recall@n_pos", "recall@200", "baseline_AUPRC"]
 
 
 def test_higher_score_means_more_anomalous():

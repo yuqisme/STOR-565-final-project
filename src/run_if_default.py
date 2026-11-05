@@ -28,7 +28,7 @@ def run(X_train, X_val, y_val, seeds=SEEDS):
     """Fit IF per seed; return (per-seed metrics DataFrame, {seed: scores})."""
     rows, scores = [], {}
     for sd in seeds:
-        m = IsolationForest(n_estimators=100, max_samples=10000, random_state=sd)
+        m = IsolationForest(n_estimators=200, max_samples=10000, random_state=sd)
         m.fit(X_train)
         scores[sd] = -m.score_samples(X_val)          # higher = more anomalous
         rows.append(evaluate(y_val, scores[sd]))

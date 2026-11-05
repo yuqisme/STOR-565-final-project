@@ -64,10 +64,10 @@ def precision_at_k(y_true, scores, k):
     return _top_k(y_true, scores, k).mean()
 
 
-def evaluate(y_true, scores, ks=(100, 200, "n_pos")):
+def evaluate(y_true, scores, ks=(50, "n_pos", 200)):
     """
     Main entry point. Returns a dict, e.g.
-      {'AUPRC': 0.71, 'recall@100': 0.52, 'recall@200': 0.78, 'recall@n_pos': 0.65,
+      {'AUPRC': 0.71, 'recall@50': 0.40, 'recall@n_pos': 0.65, 'recall@200': 0.78,
        'baseline_AUPRC': 0.0017}
     k = "n_pos" means k = number of frauds in this set.
     """
@@ -80,7 +80,7 @@ def evaluate(y_true, scores, ks=(100, 200, "n_pos")):
     return out
 
 
-def results_table(y_true, scores_by_model, ks=(100, 200, "n_pos")):
+def results_table(y_true, scores_by_model, ks=(50, "n_pos", 200)):
     """scores_by_model: {'IF': scores, 'kNN': scores, ...} -> pandas DataFrame."""
     import pandas as pd
     rows = {name: evaluate(y_true, s, ks) for name, s in scores_by_model.items()}

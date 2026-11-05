@@ -5,7 +5,7 @@ detector on the credit card fraud dataset and compare it with three baselines:
 kNN distance, PCA reconstruction error, and logistic regression (supervised reference).
 
 Because fraud is extremely rare (about 0.17% of transactions), accuracy is misleading
-(predicting "all normal" already gives about 99.8%). We evaluate with **AUPRC** and **recall@k**.
+(predicting "all normal" already gives about 99.8%). We evaluate with **AUPRC** and **recall@k** (k = 50, k = number of frauds, and k = 200).
 
 ## Team
 
