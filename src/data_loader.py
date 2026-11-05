@@ -1,8 +1,10 @@
 """
 data_loader.py  --  shared loader for the pre-split credit card files.
 
-Reads data/random_split/{train,validation,test}.csv, made once by
-make_random_split.py (stratified random 60/20/20, seed 0). Does NOT split anything.
+load_raw() downloads the original Kaggle file (mlg-ulb/creditcardfraud, pinned
+version, cached by kagglehub). make_random_split.py turns it into a deduplicated
+stratified random 60/20/20 split (seed 0) in data/random_split/, which the
+load_* functions below read. They do NOT split anything.
 Features are raw (unstandardized) and include Time. Labels: 1 = fraud.
 
 Rule: only final_test.py may call load_test(). load_train_val() never opens
@@ -13,9 +15,24 @@ from pathlib import Path
 import pandas as pd
 
 DATA_DIR = Path(__file__).resolve().parents[1] / "data" / "random_split"
+KAGGLE_DATASET = "mlg-ulb/creditcardfraud/versions/3"   # pinned for reproducibility
 FILES = {"train": "train.csv", "val": "validation.csv", "test": "test.csv"}
 LABEL = "Class"
 DROP_COLS = ()          # Time is kept; pass drop_cols=("Time",) to remove it
+
+
+def _download():
+    """Download (or reuse the cached copy of) the Kaggle dataset; return its folder."""
+    import kagglehub
+    return kagglehub.dataset_download(KAGGLE_DATASET)
+
+
+def load_raw():
+    """Return the full original creditcard.csv as a DataFrame (all rows, unsplit).
+
+    Only make_random_split.py should use this.
+    """
+    return pd.read_csv(Path(_download()) / "creditcard.csv")
 
 
 def load_split(name, data_dir=None, drop_cols=DROP_COLS):

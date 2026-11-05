@@ -1,18 +1,20 @@
 """
 make_random_split.py  --  one-time stratified random 60/20/20 split.
 
-Pools B's three time-based files (this is the ONLY place the test file is read,
-and only to pool rows), drops exact duplicate rows, shuffles with a fixed seed, and writes
+Downloads the original Kaggle file (via data_loader.load_raw), drops exact
+duplicate rows, splits randomly with a fixed seed, and writes
 data/random_split/{train,validation,test}.csv. All columns (incl. Time) are kept.
 Run once:  python src/make_random_split.py
 """
+import sys
 from pathlib import Path
 
-import pandas as pd
 from sklearn.model_selection import train_test_split
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from data_loader import load_raw  # noqa: E402
+
 ROOT = Path(__file__).resolve().parents[1]
-SRC_DIR = ROOT / "data"
 OUT_DIR = ROOT / "data" / "random_split"
 SEED = 0
 FRACS = (0.6, 0.2, 0.2)          # train, validation, test
@@ -29,10 +31,9 @@ def split(df, seed=SEED, fracs=FRACS):
 
 
 def main():
-    parts = [pd.read_csv(SRC_DIR / f) for f in ("train.csv", "validation.csv", "test.csv")]
-    pooled = pd.concat(parts, ignore_index=True)
+    pooled = load_raw()
     df = pooled.drop_duplicates().reset_index(drop=True)   # no copies across splits
-    print(f"dropped {len(pooled) - len(df)} exact duplicate rows "
+    print(f"raw {len(pooled)} rows; dropped {len(pooled) - len(df)} exact duplicate rows "
           f"({int(pooled[LABEL].sum() - df[LABEL].sum())} of them fraud)")
     train, val, test = split(df)
     assert len(train) + len(val) + len(test) == len(df)

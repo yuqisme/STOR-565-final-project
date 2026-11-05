@@ -60,3 +60,9 @@ def test_missing_values_raise(ddir):
         ddir / "train.csv", index=False)
     with pytest.raises(ValueError, match="missing"):
         dl.load_split("train", ddir)
+
+
+def test_load_raw_reads_creditcard_csv(tmp_path, monkeypatch):
+    _write(tmp_path, "creditcard.csv", [0, 1, 2], [0, 1, 0])
+    monkeypatch.setattr(dl, "_download", lambda: str(tmp_path))   # no network in tests
+    assert len(dl.load_raw()) == 3
