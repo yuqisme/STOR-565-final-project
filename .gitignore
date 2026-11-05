@@ -1,0 +1,19 @@
+# ---- Data (too big, and everyone downloads it themselves) ----
+data/
+*.csv
+!results/*.csv
+
+# ---- Python environment and caches ----
+.venv/
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ipynb_checkpoints/
+
+# ---- Editor / OS files ----
+.vscode/
+.DS_Store
+
+# ---- Personal files (remove the leading # to ignore) ----
+CLAUDE.md
