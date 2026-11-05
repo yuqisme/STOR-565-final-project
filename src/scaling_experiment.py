@@ -1,5 +1,5 @@
 """
-scaling_experiment.py  --  (owner: C)
+scaling_experiment.py  --  (owner: Yuqi)
 
 Claim to show: multiplying ONE feature by a constant
     - changes kNN-distance results (distance-based, depends on units)

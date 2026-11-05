@@ -13,7 +13,7 @@ Because fraud is extremely rare (about 0.17% of transactions), accuracy is misle
 |---|---|---|
 | A: Method lead | TODO | IF math, 2D demo, sensitivity analysis |
 | B: Data lead | TODO | Data loading, split, EDA, data documentation |
-| C: Evaluation & IF lead | TODO | Evaluation function, IF runs, scaling experiment, final test run |
+| C: Evaluation & IF lead | Yuqi Peng | Evaluation function, IF runs, scaling experiment, final test run |
 | D: Baselines lead | TODO | kNN, PCA, logistic regression, failure-case analysis |
 | E: Integration lead | TODO | Repo, README, AI-use log, slides, report |
 
