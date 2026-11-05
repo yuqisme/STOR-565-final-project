@@ -1,4 +1,4 @@
-"""Tests for src/scaling_experiment.py. Uses its synthetic load_data(); no dataset files."""
+"""Tests for src/scaling_experiment.py. Uses its synthetic_data(); no dataset files."""
 import sys
 from pathlib import Path
 
@@ -12,7 +12,7 @@ from eval_utils import auprc  # noqa: E402
 
 @pytest.fixture(scope="module")
 def data():
-    return se.load_data()
+    return se.synthetic_data()
 
 
 def test_load_data_shapes_and_labels(data):
@@ -87,6 +87,8 @@ def test_main_smoke(tmp_path, monkeypatch):
     monkeypatch.setattr(se, "RESULTS_DIR", tmp_path / "results")
     monkeypatch.setattr(se, "FIGURES_DIR", tmp_path / "figures")
     monkeypatch.setattr(se, "FACTORS", [1, 100])
+    monkeypatch.setattr(se, "load_data", se.synthetic_data)
+    monkeypatch.setattr(se, "SCALE_COL", 0)
     se.main()
     assert (tmp_path / "results" / "scaling_experiment_auprc.csv").exists()
     assert (tmp_path / "figures" / "scaling_experiment.png").exists()

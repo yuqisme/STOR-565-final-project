@@ -4,40 +4,24 @@ run_if_default.py  --  Isolation Forest with sklearn defaults, validation set on
 Fits IsolationForest on the train file for 5 seeds, scores the validation file with -score_samples (higher = more
 anomalous), and reports mean +/- std of AUPRC and recall@k.
 
-NEVER reads the test file. Replace load_train_val() with the shared loader
-once teammate B provides it.
+NEVER reads the test file. Data comes from the shared data_loader.
 
 Outputs: results/if_default_val.csv, figures/if_default_pr_val.png
 """
 import sys
 from pathlib import Path
 
-import numpy as np
 import pandas as pd
 from sklearn.ensemble import IsolationForest
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+from data_loader import load_train_val  # noqa: E402
 from eval_utils import evaluate, plot_pr_curves  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
-DATA_DIR = ROOT / "data"
 RESULTS_DIR = ROOT / "results"
 FIGURES_DIR = ROOT / "figures"
 SEEDS = range(5)
-LABEL = "Class"
-DROP_COLS = ["Time"]    # time index: not a feature under a time-based split
-
-
-def load_train_val(data_dir=DATA_DIR):
-    """Read the pre-split train/validation CSVs (no test).
-
-    Returns X_train (DataFrame), X_val (DataFrame), y_val (int ndarray, 1=fraud).
-    Features are raw (unstandardized); LABEL and DROP_COLS are removed.
-    """
-    train = pd.read_csv(Path(data_dir) / "train.csv")
-    val = pd.read_csv(Path(data_dir) / "validation.csv")
-    feats = [c for c in train.columns if c != LABEL and c not in DROP_COLS]
-    return train[feats], val[feats], val[LABEL].to_numpy().astype(int)
 
 
 def run(X_train, X_val, y_val, seeds=SEEDS):
@@ -58,7 +42,7 @@ def summarize(per_seed):
 
 
 def main():
-    X_train, X_val, y_val = load_train_val()
+    X_train, _, X_val, y_val = load_train_val()
     print(f"train {X_train.shape}, val {X_val.shape}, val frauds {y_val.sum()} "
           f"({y_val.mean():.4%})")
     per_seed, scores = run(X_train, X_val, y_val)
