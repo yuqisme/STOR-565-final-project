@@ -1,6 +1,6 @@
-# STOR# Isolation Forest for Credit Card Fraud Detection
+# STOR 565 # Isolation Forest for Credit Card Fraud Detection
 
-STOR 565 group project. We study **Isolation Forest (IF)** as an unsupervised anomaly
+STOR 565 group project: We study **Isolation Forest (IF)** as an unsupervised anomaly
 detector on the credit card fraud dataset and compare it with three baselines:
 kNN distance, PCA reconstruction error, and logistic regression (supervised reference).
 
@@ -65,6 +65,7 @@ We use the Credit Card Fraud Detection dataset provided by the Machine Learning 
 Run:
 ```bash
 python src/make_random_split.py
+```
 
 The dataset is not committed to GitHub. It can be downloaded from Kaggle or accessed through the shared Google Drive folder.
 
