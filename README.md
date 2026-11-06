@@ -12,7 +12,7 @@ Because fraud is extremely rare (about 0.17% of transactions), accuracy is misle
 | Role | Member | Main responsibility |
 |---|---|---|
 | A: Method lead | TODO | IF math, 2D demo, sensitivity analysis |
-| B: Data lead | TODO | Data loading, split, EDA, data documentation |
+| B: Data lead | Thu Nguyen | Data loading, split, EDA, data documentation |
 | C: Evaluation & IF lead | Yuqi Peng | Evaluation function, IF runs, scaling experiment, final test run |
 | D: Baselines lead | TODO | kNN, PCA, logistic regression, failure-case analysis |
 | E: Integration lead | TODO | Repo, README, AI-use log, slides, report |
@@ -22,20 +22,16 @@ Because fraud is extremely rare (about 0.17% of transactions), accuracy is misle
 ```
 .
 ├── README.md
-├── CLAUDE.md                  # context for Claude Code (optional)
-├── requirements.txt
-├── data/                      # NOT committed (see "Data" below)
+├── .gitignore
 ├── src/
-│   ├── data_loader.py         # B: shared loader + fixed time-based split
-│   ├── eval_utils.py          # C: shared evaluation (AUPRC, recall@k, PR curves)
-│   └── ...
-├── experiments/
-│   ├── run_if_default.py      # C: IF default settings
-│   ├── scaling_experiment.py  # C: rescaling one feature (kNN changes, IF does not)
-│   ├── baselines.py           # D
-│   └── final_test.py          # C: run ONCE on 11/11
-├── results/                   # tables (csv)
-├── figures/                   # plots used in slides and report
+│   ├── Data565.ipynb             # B: data preparation, chronological split, EDA
+│   ├── data_loader.py           # Shared data loader
+│   ├── make_random_split.py     # Existing random-split script
+│   ├── eval_utils.py            # C: evaluation metrics
+│   ├── run_if_default.py        # C: Isolation Forest experiments
+│   └── scaling_experiment.py    # C: scaling experiment
+├── results/                     # Experiment results
+├── figures/                     # Figures for slides and report
 └── tests/
 ```
 
@@ -55,21 +51,24 @@ Suggested `requirements.txt`: `numpy`, `pandas`, `scikit-learn`, `matplotlib`, `
 
 ## Data
 
-We use the credit card fraud dataset (European cardholders, two days of transactions;
-features `Time`, `V1`–`V28` (PCA-transformed), `Amount`, and label `Class`).
+We use the Credit Card Fraud Detection dataset provided by the Machine Learning Group at Université Libre de Bruxelles (ULB).
 
-- Source: TODO (B: exact link)
-- Access date: TODO
-- License: TODO (B: confirm on the dataset page)
-- Download: put the file at `data/creditcard.csv`. The data is **not** committed to git.
-- Limitations: TODO (B: e.g., only two days, features anonymized by PCA, very few frauds)
+- **Source:** https://www.kaggle.com/datasets/mlg-ulb/creditcardfraud
+- **Access date:** November 5, 2026
+- **License:** Open Database License (ODbL) — confirm against the Kaggle dataset page.
+- **Dataset size:** 284,807 transactions, including 492 fraudulent transactions (0.1727%).
+- **Features:** `Time`, `V1`–`V28` (PCA-transformed and anonymized), and `Amount`.
+- **Target:** `Class` (0 = legitimate, 1 = fraud).
+- **Split:** Chronological 60% training, 20% validation, and 20% testing, with boundaries adjusted to avoid splitting identical timestamps.
+- **Limitations:** The dataset covers only two days in September 2013. PCA anonymization limits feature interpretability, and the small number of fraudulent transactions makes evaluation challenging.
+
+The dataset is not committed to GitHub. It can be downloaded from Kaggle or accessed through the shared Google Drive folder.
 
 ## Conventions (everyone follows these)
 
 1. **Score direction:** higher score = more anomalous. Labels: `1` = fraud, `0` = normal.
    For IF use `-model.score_samples(X)` since sklearn's value is higher = more normal.
-2. **Split:** time-based train / validation / test, produced only by `src/data_loader.py`.
-   Fixed random seed: TODO.
+2. **Split**: chronological 60/20/20 train/validation/test, with no overlapping timestamps across splits. All experiments must use the same fixed split.
 3. **Test set:** nobody touches it before the final run. Only C runs it, once, on 11/11.
    All tuning uses the validation set.
 4. **Metrics:** call `eval_utils.evaluate(y_true, scores)` so all results are comparable.
