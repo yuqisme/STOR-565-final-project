@@ -26,12 +26,13 @@ Because fraud is extremely rare (about 0.17% of transactions), accuracy is misle
 ├── requirements.txt
 ├── data/                      # NOT committed (see "Data" below)
 ├── src/
-│   ├── data_loader.py         # B: shared loader + fixed time-based split
+│   ├── make_random_split.py   # C: Kaggle download -> dedup -> random 60/20/20 split
+│   ├── data_loader.py         # shared loader for the saved split
 │   ├── eval_utils.py          # C: shared evaluation (AUPRC, recall@k, PR curves)
+│   ├── run_if.py              # C: IF default vs. 200 trees / psi=10000
+│   ├── scaling_experiment.py  # C: rescaling one feature (kNN changes, IF does not)
 │   └── ...
 ├── experiments/
-│   ├── run_if_default.py      # C: IF default settings
-│   ├── scaling_experiment.py  # C: rescaling one feature (kNN changes, IF does not)
 │   ├── baselines.py           # D
 │   └── final_test.py          # C: run ONCE on 11/11
 ├── results/                   # tables (csv)
@@ -79,9 +80,10 @@ features `Time`, `V1`–`V28` (PCA-transformed), `Amount`, and label `Class`).
 TODO: fill in as scripts are finished. Example:
 
 ```bash
-python experiments/run_if_default.py        # IF default settings on validation set
+python src/make_random_split.py             # one-time: build the split in data/random_split/
+python src/run_if.py                        # IF configs on validation set
 python experiments/baselines.py             # kNN, PCA, logistic regression
-python experiments/scaling_experiment.py    # scaling experiment
+python src/scaling_experiment.py            # scaling experiment
 python experiments/final_test.py            # final test-set run (once only)
 ```
 

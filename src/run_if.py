@@ -1,5 +1,5 @@
 """
-run_if_default.py  --  Isolation Forest: sklearn defaults vs. a larger forest, validation only.
+run_if.py  --  Isolation Forest: sklearn defaults vs. a larger forest, validation only.
 
 Configs (psi = max_samples):
     default        100 trees, psi = 256     (sklearn defaults; the control)
