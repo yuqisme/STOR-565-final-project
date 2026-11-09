@@ -29,6 +29,8 @@ Because fraud is extremely rare (about 0.17% of transactions), accuracy is misle
 │   ├── make_random_split.py     # Kaggle download -> dedup -> random 60/20/20 split
 │   ├── eval_utils.py            # C: evaluation metrics
 │   ├── check_split.py           # E: sanity check + fingerprints of the split files
+│   ├── toy_1d.py                # A: 1-2-3-4-100 toy example (exact E[h], score)
+│   ├── demo_2d.py               # A: 2D isolation-tree demo figures
 │   ├── run_if.py                # C: IF default vs. 200 trees / psi=10000
 │   ├── tune_if.py               # C: IF grid over psi x n_estimators (validation only)
 │   └── scaling_experiment.py    # C: scaling experiment
@@ -103,6 +105,8 @@ python src/check_split.py         # confirm you have the shared split
 python src/run_if.py              # IF default vs. t200_psi10000, validation, ~20 s
 python src/scaling_experiment.py  # scaling experiment, validation, ~20 s
 python src/tune_if.py             # IF grid psi x n_estimators, validation, several minutes
+python src/toy_1d.py              # slides: 1-2-3-4-100 toy example, a few seconds
+python src/demo_2d.py             # slides: 2D isolation demo figures, a few seconds
 ```
 
 Still to add (TODO):
