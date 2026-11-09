@@ -1,0 +1,9 @@
+# Verified end to end on 2026-11-09 with Python 3.13 and these versions:
+# numpy 2.5.3, pandas 3.0.5, scikit-learn 1.9.1, matplotlib 3.11.2, pytest 9.x
+numpy
+pandas
+scikit-learn
+matplotlib
+pytest
+kagglehub      # only needed for make_random_split.py (downloads the raw data)
+seaborn        # only needed for the EDA notebook src/Data565.ipynb

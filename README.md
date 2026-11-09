@@ -28,11 +28,15 @@ Because fraud is extremely rare (about 0.17% of transactions), accuracy is misle
 │   ├── data_loader.py           # Shared data loader
 │   ├── make_random_split.py     # Kaggle download -> dedup -> random 60/20/20 split
 │   ├── eval_utils.py            # C: evaluation metrics
+│   ├── check_split.py           # E: sanity check + fingerprints of the split files
 │   ├── run_if.py                # C: IF default vs. 200 trees / psi=10000
+│   ├── tune_if.py               # C: IF grid over psi x n_estimators (validation only)
 │   └── scaling_experiment.py    # C: scaling experiment
 ├── results/                     # Experiment results
 ├── figures/                     # Figures for slides and report
-└── tests/
+├── tests/                       # pytest unit tests (synthetic data, no real data needed)
+├── test.py                      # quick row/fraud counts of the three split files
+└── requirements.txt
 ```
 
 (Adjust this tree to match the actual files as they are added.)
@@ -45,9 +49,8 @@ cd <REPO_NAME>
 python -m venv .venv
 source .venv/bin/activate        # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
+python -m pytest -q              # unit tests, no real data needed
 ```
-
-Suggested `requirements.txt`: `numpy`, `pandas`, `scikit-learn`, `matplotlib`, `pytest`.
 
 ## Data
 
@@ -68,6 +71,16 @@ python src/make_random_split.py
 ```
 
 The dataset is not committed to GitHub. It can be downloaded from Kaggle or accessed through the shared Google Drive folder.
+If you use the Drive files, put `train.csv`, `validation.csv` and `test.csv` in `data/random_split/`.
+
+Either way, check that you have the shared split:
+
+```bash
+python src/check_split.py
+```
+
+It should report 170,235 / 56,745 / 56,746 rows (284 / 94 / 95 frauds) and
+"matches shared split" for all three files.
 
 ## Conventions (everyone follows these)
 
@@ -81,14 +94,22 @@ The dataset is not committed to GitHub. It can be downloaded from Kaggle or acce
 
 ## How to reproduce results
 
-TODO: fill in as scripts are finished. Example:
+Run from the repository root. Verified end to end on 2026-11-09: the scripts below
+reproduce the committed `results/*.csv` exactly.
 
 ```bash
-python src/make_random_split.py             # one-time: build the split in data/random_split/
-python src/run_if.py                        # IF configs on validation set
-python experiments/baselines.py             # kNN, PCA, logistic regression
-python src/scaling_experiment.py            # scaling experiment
-python experiments/final_test.py            # final test-set run (once only)
+python src/make_random_split.py   # one-time (or use the Drive files): data/random_split/
+python src/check_split.py         # confirm you have the shared split
+python src/run_if.py              # IF default vs. t200_psi10000, validation, ~20 s
+python src/scaling_experiment.py  # scaling experiment, validation, ~20 s
+python src/tune_if.py             # IF grid psi x n_estimators, validation, several minutes
+```
+
+Still to add (TODO):
+
+```bash
+python src/baselines.py           # D: kNN, PCA, logistic regression (validation)
+python src/final_test.py          # C: final test-set run, once only
 ```
 
 Outputs go to `results/` and `figures/`.
@@ -114,4 +135,3 @@ cross-checked by a teammate.
 ## References
 
 - Liu, F. T., Ting, K. M., & Zhou, Z.-H. (2008). Isolation Forest. *IEEE ICDM*.
--565-final-project
