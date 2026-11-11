@@ -1,0 +1,43 @@
+{
+  "models": {
+    "IF default": {
+      "n_estimators": 100,
+      "max_samples": 256
+    },
+    "IF tuned": {
+      "n_estimators": 200,
+      "max_samples": 4096
+    },
+    "kNN distance": {
+      "k": 50,
+      "drop_time": true,
+      "standardized": true,
+      "reference_size": 20000
+    },
+    "Logistic": {
+      "C": 10,
+      "class_weight": null,
+      "seed": 0
+    },
+    "XGBoost": {
+      "scale_pos_weight": 1.0
+    }
+  },
+  "seed": 0,
+  "train_rows": 170235,
+  "train_frauds": 284,
+  "val_rows": 56745,
+  "val_frauds": 94,
+  "data_sha256": {
+    "train.csv": "ef87ce7728567f4b718055711bb4f0198c89442197417f7dfbde4bab9adfff35",
+    "validation.csv": "0f75e3910e09de58f34ad07d2384f2291e85cf7c9b4f93b95f1ef01345cd6508"
+  },
+  "python": "3.9.6",
+  "packages": {
+    "numpy": "1.26.4",
+    "pandas": "2.3.3",
+    "scikit-learn": "1.6.1",
+    "xgboost": "2.1.4",
+    "matplotlib": "3.9.4"
+  }
+}

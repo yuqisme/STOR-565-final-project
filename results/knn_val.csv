@@ -1,0 +1,2 @@
+drop_time,standardized,k,reference_size,AUPRC_mean,recall@50_mean,recall@n_pos_mean,recall@200_mean,baseline_AUPRC_mean,AUPRC_std,recall@50_std,recall@n_pos_std,recall@200_std,baseline_AUPRC_std
+True,True,50,20000,0.17328062538499783,0.19148936170212766,0.26595744680851063,0.4127659574468085,0.0016565336152965019,0.0018631575121698866,0.0,0.0,0.004757591441488921,0.0
