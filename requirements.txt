@@ -1,9 +1,13 @@
-# Verified end to end on 2026-11-09 with Python 3.13 and these versions:
-# numpy 2.5.3, pandas 3.0.5, scikit-learn 1.9.1, matplotlib 3.11.2, pytest 9.x
+# Install with: pip install -r requirements.txt
+# Last checked with Python 3.14 and numpy 2.5.4, pandas 3.1.1, scikit-learn 1.9.1,
+# matplotlib 3.11.2, pytest 9.2.0, xgboost 2.1.4 (all 74 unit tests pass).
+# D's committed baseline results were produced with older versions (see
+# results/baselines_selected.json: Python 3.9, numpy 1.26, scikit-learn 1.6).
 numpy
 pandas
 scikit-learn
 matplotlib
 pytest
+xgboost        # needed for src/run_xgboost.py, src/compare_baselines.py and tests/test_baselines.py
 kagglehub      # only needed for make_random_split.py (downloads the raw data)
 seaborn        # only needed for the EDA notebook src/Data565.ipynb

@@ -23,23 +23,32 @@ Because fraud is extremely rare (about 0.17% of transactions), accuracy is misle
 ```
 .
 ├── README.md
-├── .gitignore
+├── requirements.txt
+├── AI_USE_LOG.md                # E: running AI-use log (team appendix)
+├── AI_USE_NOTES_D.md            # D: AI-use notes for the baselines
+├── BASELINES_NOTES.md           # D: baseline findings (validation)
+├── BASELINES_HANDOFF.md         # D: frozen configs and policies for the final test run
 ├── src/
 │   ├── Data565.ipynb            # B: data preparation, stratified random split, EDA
-│   ├── data_loader.py           # Shared data loader
 │   ├── make_random_split.py     # Kaggle download -> dedup -> random 60/20/20 split
-│   ├── eval_utils.py            # C: evaluation metrics
+│   ├── data_loader.py           # Shared data loader (load_test is for final_test.py only)
 │   ├── check_split.py           # E: sanity check + fingerprints of the split files
-│   ├── toy_1d.py                # A: 1-2-3-4-100 toy example (exact E[h], score)
-│   ├── demo_2d.py               # A: 2D isolation-tree demo figures
+│   ├── eval_utils.py            # C: evaluation metrics (AUPRC, recall@k, PR curves)
 │   ├── run_if.py                # C: IF default vs. 200 trees / psi=10000
 │   ├── tune_if.py               # C: IF grid over psi x n_estimators (validation only)
-│   └── scaling_experiment.py    # C: scaling experiment
-├── results/                     # Experiment results
-├── figures/                     # Figures for slides and report
+│   ├── scaling_experiment.py    # C: scaling experiment (IF vs kNN)
+│   ├── baseline_utils.py        # D: shared kNN / logistic / XGBoost estimators, helpers
+│   ├── run_knn.py               # D: kNN distance tuning (k, Time)
+│   ├── run_logistic.py          # D: logistic regression tuning (C, class weight)
+│   ├── run_xgboost.py           # D: XGBoost tuning (scale_pos_weight)
+│   ├── compare_baselines.py     # D: refit selected models, comparison table, failure cases
+│   ├── fraud_amount_analysis.py # D: review budgets and cost policies (raw Amount)
+│   ├── toy_1d.py                # A: 1-2-3-4-100 toy example (exact E[h], score)
+│   └── demo_2d.py               # A: 2D isolation-tree demo figures
+├── results/                     # tables (csv) and selected-config JSON files
+├── figures/                     # figures for slides and report
 ├── tests/                       # pytest unit tests (synthetic data, no real data needed)
-├── test.py                      # quick row/fraud counts of the three split files
-└── requirements.txt
+└── test.py                      # quick row/fraud counts of the three split files
 ```
 
 ## Setup
@@ -74,14 +83,17 @@ python src/make_random_split.py
 The dataset is not committed to GitHub. It can be downloaded from Kaggle or accessed through the shared Google Drive folder.
 If you use the Drive files, put `train.csv`, `validation.csv` and `test.csv` in `data/random_split/`.
 
-Either way, check that you have the shared split:
+Either way, check the split:
 
 ```bash
 python src/check_split.py
 ```
 
-It should report 170,235 / 56,745 / 56,746 rows (284 / 94 / 95 frauds) and
-"matches shared split" for all three files.
+It should report 170,235 / 56,745 / 56,746 rows (284 / 94 / 95 frauds). The Drive files
+should also show "matches shared split" for all three SHA-256 fingerprints. Files
+regenerated with `make_random_split.py` have the same sizes, but their train and
+validation fingerprints currently differ from the Drive files' (the script flags
+this), so fingerprints only identify the Drive copy.
 
 ## Conventions (everyone follows these)
 
@@ -100,10 +112,15 @@ reproduce the committed `results/*.csv` exactly.
 
 ```bash
 python src/make_random_split.py   # one-time (or use the Drive files): data/random_split/
-python src/check_split.py         # confirm you have the shared split
+python src/check_split.py         # confirm the split
 python src/run_if.py              # IF default vs. t200_psi10000, validation, ~20 s
 python src/scaling_experiment.py  # scaling experiment, validation, ~20 s
-python src/tune_if.py             # IF grid psi x n_estimators, validation, several minutes
+python src/tune_if.py             # IF grid psi x n_estimators, validation, ~2.5 min
+python src/run_knn.py             # D: kNN tuning, writes results/knn_selected.json
+python src/run_logistic.py        # D: logistic tuning, writes results/logistic_selected.json
+python src/run_xgboost.py         # D: XGBoost tuning, writes results/xgboost_selected.json
+python src/compare_baselines.py   # D: needs the three selected-config files and tune_if.py output
+python src/fraud_amount_analysis.py  # D: run after compare_baselines.py (uses its score cache)
 python src/toy_1d.py              # slides: 1-2-3-4-100 toy example, a few seconds
 python src/demo_2d.py             # slides: 2D isolation demo figures, a few seconds
 ```
@@ -111,7 +128,6 @@ python src/demo_2d.py             # slides: 2D isolation demo figures, a few sec
 Still to add (TODO):
 
 ```bash
-python src/baselines.py           # D: kNN, PCA, logistic regression (validation)
 python src/final_test.py          # C: final test-set run, once only
 ```
 
@@ -127,6 +143,22 @@ See `BASELINES_NOTES.md` for findings and `BASELINES_HANDOFF.md` for configurati
 score direction, raw-Amount accounting and frozen validation policies for C's final
 test evaluation. Cost curves are validation-optimized and therefore optimistic.
 The local `.baseline_cache/` is ignored; rerun comparison to regenerate it.
+
+## Validation results so far
+
+Mean ± sample std over seeds 0-4 (logistic is deterministic). Validation has 94 frauds,
+random AUPRC = 0.0017. Source: `results/baselines_compare_val.csv`; see
+`BASELINES_NOTES.md` for settings and caveats. "IF tuned" is the best mean AUPRC of
+`results/if_tuning_val.csv` (200 trees, psi = 4096); AUPRC is flat within noise for
+psi from about 2048 to 50000, so this choice is not sharp.
+
+| Method | Uses labels | AUPRC | recall@50 | recall@n_pos | recall@200 |
+|---|---|---|---|---|---|
+| IF default (100 trees, psi=256) | no | 0.159 ± 0.018 | 0.189 | 0.279 | 0.409 |
+| IF tuned (200 trees, psi=4096) | no | 0.235 ± 0.034 | 0.202 | 0.302 | 0.462 |
+| kNN distance | no | 0.173 ± 0.002 | 0.192 | 0.266 | 0.413 |
+| Logistic regression | yes | 0.743 | 0.479 | 0.766 | 0.840 |
+| XGBoost | yes | 0.834 ± 0.001 | 0.528 | 0.821 | 0.843 |
 
 ## Timeline
 
