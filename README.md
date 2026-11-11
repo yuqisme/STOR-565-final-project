@@ -1,8 +1,9 @@
 # STOR 565 # Isolation Forest for Credit Card Fraud Detection
 
 STOR 565 group project: We study **Isolation Forest (IF)** as an unsupervised anomaly
-detector on the credit card fraud dataset and compare it with three baselines:
-kNN distance, PCA reconstruction error, and logistic regression (supervised reference).
+detector on the credit card fraud dataset and compare it with kNN distance
+(unsupervised), logistic regression and XGBoost (supervised references).
+PCA reconstruction was dropped because V1–V28 are already PCA-transformed.
 
 Because fraud is extremely rare (about 0.17% of transactions), accuracy is misleading
 (predicting "all normal" already gives about 99.8%). We evaluate with **AUPRC** and **recall@k** (k = 50, k = number of frauds, and k = 200).
@@ -14,7 +15,7 @@ Because fraud is extremely rare (about 0.17% of transactions), accuracy is misle
 | A: Method lead | TODO | IF math, 2D demo, sensitivity analysis |
 | B: Data lead | Thu Nguyen | Data loading, split, EDA, data documentation |
 | C: Evaluation & IF lead | Yuqi Peng | Evaluation function, IF runs, scaling experiment, final test run |
-| D: Baselines lead | TODO | kNN, PCA, logistic regression, failure-case analysis |
+| D: Baselines lead | Zihan Zhao | kNN distance, logistic regression, XGBoost, failure and fraud-amount analysis |
 | E: Integration lead | TODO | Repo, README, AI-use log, slides, report |
 
 ## Repository structure
@@ -29,25 +30,42 @@ Because fraud is extremely rare (about 0.17% of transactions), accuracy is misle
 │   ├── make_random_split.py     # Kaggle download -> dedup -> random 60/20/20 split
 │   ├── eval_utils.py            # C: evaluation metrics
 │   ├── run_if.py                # C: IF default vs. 200 trees / psi=10000
-│   └── scaling_experiment.py    # C: scaling experiment
+│   ├── tune_if.py               # C: IF hyperparameter grid
+│   ├── scaling_experiment.py    # C: scaling experiment
+│   ├── baseline_utils.py        # D: train-only pipelines and shared helpers
+│   ├── run_logistic.py          # D: logistic C / class-weight grid
+│   ├── run_knn.py               # D: unsupervised distance, k / Time grid
+│   ├── run_xgboost.py           # D: supervised imbalance-weight comparison
+│   ├── compare_baselines.py     # D: refits, combined table, failure analysis
+│   └── fraud_amount_analysis.py # D: review budgets and cost policies
+├── BASELINES_NOTES.md           # D: concise report/slide notes
+├── BASELINES_HANDOFF.md         # D: exact final-fit and policy instructions for C
+├── AI_USE_NOTES_D.md            # D: AI contribution and human review checklist
+├── requirements.txt            # Pinned experiment dependencies
 ├── results/                     # Experiment results
 ├── figures/                     # Figures for slides and report
 └── tests/
 ```
 
-(Adjust this tree to match the actual files as they are added.)
-
 ## Setup
 
 ```bash
-git clone <REPO_URL>
-cd <REPO_NAME>
+git clone https://github.com/yuqisme/STOR-565-final-project.git
+cd STOR-565-final-project
 python -m venv .venv
 source .venv/bin/activate        # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-Suggested `requirements.txt`: `numpy`, `pandas`, `scikit-learn`, `matplotlib`, `pytest`.
+Use Python 3.9–3.12 with the pinned requirements for these runs. On macOS,
+XGBoost requires an OpenMP runtime (normally `brew install libomp`). In a local
+virtual environment with scikit-learn's bundled OpenMP, this alternative also works:
+
+```bash
+export DYLD_LIBRARY_PATH="$(python -c 'import pathlib, sklearn; print(pathlib.Path(sklearn.__file__).parent / ".dylibs")')${DYLD_LIBRARY_PATH:+:$DYLD_LIBRARY_PATH}"
+```
+
+No dataset CSVs, model score arrays or fitted models are committed.
 
 ## Data
 
@@ -81,17 +99,35 @@ The dataset is not committed to GitHub. It can be downloaded from Kaggle or acce
 
 ## How to reproduce results
 
-TODO: fill in as scripts are finished. Example:
+Place the team's existing `train.csv` and `validation.csv` in `data/random_split/`.
+The commands below never open the real test split. To generate a fresh split from
+the raw source separately, use `python src/make_random_split.py`; do not overwrite
+the team's frozen split while reproducing the published baseline results.
 
 ```bash
-python src/make_random_split.py             # one-time: build the split in data/random_split/
 python src/run_if.py                        # IF configs on validation set
-python experiments/baselines.py             # kNN, PCA, logistic regression
+python src/tune_if.py                       # optional: rebuild existing IF tuning table
 python src/scaling_experiment.py            # scaling experiment
-python experiments/final_test.py            # final test-set run (once only)
+python src/run_logistic.py                  # required baseline, 10 validation configs
+python src/run_knn.py                       # required distance baseline, 5 seeds
+python src/run_xgboost.py                   # supervised XGBoost, 2 weights x 5 seeds
+python src/compare_baselines.py             # requires all 3 tuning scripts + IF grid
+python src/fraud_amount_analysis.py         # requires comparison's local score cache
+python -m pytest -q                        # synthetic data only
 ```
 
-Outputs go to `results/` and `figures/`.
+Outputs go to `results/` and `figures/`. The selected configuration JSON files are
+the source for comparison refits. kNN uses a label-free, seeded 20,000-row training
+reference sample; its scaler fits the entire training split, before sampling.
+Random models report means and sample standard deviations over seeds 0–4;
+logistic uses deterministic LBFGS with seed 0. Comparison columns without a suffix,
+PR plots, failures and monetary policies use the predeclared seed 0, while
+`*_mean`/`*_std` columns summarize independent seed runs, not an ensemble.
+
+See `BASELINES_NOTES.md` for findings and `BASELINES_HANDOFF.md` for configurations,
+score direction, raw-Amount accounting and frozen validation policies for C's final
+test evaluation. Cost curves are validation-optimized and therefore optimistic.
+The local `.baseline_cache/` is ignored; rerun comparison to regenerate it.
 
 ## Timeline
 
