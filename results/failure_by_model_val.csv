@@ -1,0 +1,6 @@
+model,frauds_caught_top200,frauds_missed_top200
+IF default,39,55
+IF tuned,41,53
+kNN distance,39,55
+Logistic,79,15
+XGBoost,79,15

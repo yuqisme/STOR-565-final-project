@@ -1,8 +1,9 @@
 # STOR 565 # Isolation Forest for Credit Card Fraud Detection
 
 STOR 565 group project: We study **Isolation Forest (IF)** as an unsupervised anomaly
-detector on the credit card fraud dataset and compare it with three baselines:
-kNN distance, PCA reconstruction error, and logistic regression (supervised reference).
+detector on the credit card fraud dataset and compare it with kNN distance
+(unsupervised), logistic regression and XGBoost (supervised references).
+PCA reconstruction was dropped because V1–V28 are already PCA-transformed.
 
 Because fraud is extremely rare (about 0.17% of transactions), accuracy is misleading
 (predicting "all normal" already gives about 99.8%). We evaluate with **AUPRC** and **recall@k** (k = 50, k = number of frauds, and k = 200).
@@ -14,7 +15,7 @@ Because fraud is extremely rare (about 0.17% of transactions), accuracy is misle
 | A: Method lead | TODO | IF math, 2D demo, sensitivity analysis |
 | B: Data lead | Thu Nguyen | Data loading, split, EDA, data documentation |
 | C: Evaluation & IF lead | Yuqi Peng | Evaluation function, IF runs, scaling experiment, final test run |
-| D: Baselines lead | TODO | kNN, PCA, logistic regression, failure-case analysis |
+| D: Baselines lead | Zihan Zhao | kNN distance, logistic regression, XGBoost, failure and fraud-amount analysis |
 | E: Integration lead | TODO | Repo, README, AI-use log, slides, report |
 
 ## Repository structure
@@ -41,13 +42,11 @@ Because fraud is extremely rare (about 0.17% of transactions), accuracy is misle
 └── requirements.txt
 ```
 
-(Adjust this tree to match the actual files as they are added.)
-
 ## Setup
 
 ```bash
-git clone <REPO_URL>
-cd <REPO_NAME>
+git clone https://github.com/yuqisme/STOR-565-final-project.git
+cd STOR-565-final-project
 python -m venv .venv
 source .venv/bin/activate        # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
@@ -116,7 +115,18 @@ python src/baselines.py           # D: kNN, PCA, logistic regression (validation
 python src/final_test.py          # C: final test-set run, once only
 ```
 
-Outputs go to `results/` and `figures/`.
+Outputs go to `results/` and `figures/`. The selected configuration JSON files are
+the source for comparison refits. kNN uses a label-free, seeded 20,000-row training
+reference sample; its scaler fits the entire training split, before sampling.
+Random models report means and sample standard deviations over seeds 0–4;
+logistic uses deterministic LBFGS with seed 0. Comparison columns without a suffix,
+PR plots, failures and monetary policies use the predeclared seed 0, while
+`*_mean`/`*_std` columns summarize independent seed runs, not an ensemble.
+
+See `BASELINES_NOTES.md` for findings and `BASELINES_HANDOFF.md` for configurations,
+score direction, raw-Amount accounting and frozen validation policies for C's final
+test evaluation. Cost curves are validation-optimized and therefore optimistic.
+The local `.baseline_cache/` is ignored; rerun comparison to regenerate it.
 
 ## Timeline
 

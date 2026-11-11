@@ -17,3 +17,6 @@ __pycache__/
 
 # ---- Personal files (remove the leading # to ignore) ----
 CLAUDE.md
+
+# Local validation score arrays; only aggregate results are published.
+.baseline_cache/
