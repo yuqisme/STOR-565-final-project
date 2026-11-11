@@ -76,17 +76,29 @@ def test_scores_follow_higher_is_more_anomalous(data):
         assert auprc(y_val, s) > 5 * y_val.mean()               # far above random
 
 
-def test_knn_subsampling_is_deterministic(data, monkeypatch):
+def test_knn_reference_sampling_is_seeded(data):
     X_train, X_val, _ = data
-    monkeypatch.setattr(se, "KNN_TRAIN_SUBSAMPLE", 500)
-    np.testing.assert_array_equal(se.knn_scores(X_train, X_val),
-                                  se.knn_scores(X_train, X_val))
+    a = se.knn_scores(X_train, X_val, reference_size=500, seed=0)
+    np.testing.assert_array_equal(a, se.knn_scores(X_train, X_val, reference_size=500, seed=0))
+    assert not np.allclose(a, se.knn_scores(X_train, X_val, reference_size=500, seed=1))
+
+
+def test_run_experiment_if_invariant_knn_not(data):
+    X_train, X_val, y_val = data
+    t = se.run_experiment(X_train, X_val, y_val, col=0, factors=[1, 10, 1000], seeds=range(2))
+    assert set(t.model) == {"IF default", "IF tuned", "kNN"} and len(t) == 9
+    f = t[t.factor == 1000].set_index("model")
+    assert f.loc["IF default", "max_abs_score_change"] < 1e-8
+    assert f.loc["IF tuned", "max_abs_score_change"] < 1e-8
+    assert f.loc["kNN", "max_abs_score_change"] > 1e-2
+    assert (t[t.factor == 1].max_abs_score_change == 0).all()
 
 
 def test_main_smoke(tmp_path, monkeypatch):
     monkeypatch.setattr(se, "RESULTS_DIR", tmp_path / "results")
     monkeypatch.setattr(se, "FIGURES_DIR", tmp_path / "figures")
     monkeypatch.setattr(se, "FACTORS", [1, 100])
+    monkeypatch.setattr(se, "SEEDS", range(2))
     monkeypatch.setattr(se, "load_data", se.synthetic_data)
     monkeypatch.setattr(se, "SCALE_COL", 0)
     se.main()

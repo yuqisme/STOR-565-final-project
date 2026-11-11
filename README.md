@@ -43,6 +43,7 @@ Because fraud is extremely rare (about 0.17% of transactions), accuracy is misle
 │   ├── run_xgboost.py           # D: XGBoost tuning (scale_pos_weight)
 │   ├── compare_baselines.py     # D: refit selected models, comparison table, failure cases
 │   ├── fraud_amount_analysis.py # D: review budgets and cost policies (raw Amount)
+│   ├── final_test.py            # C: the single final test-set run (needs --run-final-test)
 │   ├── toy_1d.py                # A: 1-2-3-4-100 toy example (exact E[h], score)
 │   └── demo_2d.py               # A: 2D isolation-tree demo figures
 ├── results/                     # tables (csv) and selected-config JSON files
@@ -116,7 +117,7 @@ reproduce the committed `results/*.csv` exactly.
 python src/make_random_split.py   # one-time (or use the Drive files): data/random_split/
 python src/check_split.py         # confirm the split
 python src/run_if.py              # IF default vs. tuned (psi=4096) vs. psi=10000, validation
-python src/scaling_experiment.py  # scaling experiment, validation, ~20 s
+python src/scaling_experiment.py  # scaling experiment (IF default/tuned vs kNN), validation, ~5 min
 python src/tune_if.py             # IF grid psi x n_estimators, validation, ~2.5 min
 python src/run_knn.py             # D: kNN tuning, writes results/knn_selected.json
 python src/run_logistic.py        # D: logistic tuning, writes results/logistic_selected.json
@@ -127,10 +128,10 @@ python src/toy_1d.py              # slides: 1-2-3-4-100 toy example, a few secon
 python src/demo_2d.py             # slides: 2D isolation demo figures, a few seconds
 ```
 
-Still to add (TODO):
+Final test run (C only, once; refuses to rerun; primary review cost c = 5):
 
 ```bash
-python src/final_test.py          # C: final test-set run, once only
+python src/final_test.py --run-final-test
 ```
 
 Outputs go to `results/` and `figures/`. The selected configuration JSON files are

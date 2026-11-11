@@ -73,7 +73,9 @@ At c=5, rank and inclusive-threshold policies coincide (all boundaries unique):
 | Logistic | 103 | .04944505706690619 | 4,962.70 | 62.94% |
 | XGBoost | 141 | .022968342527747154 | 4,373.87 | 67.34% |
 
-Choose the assumed c and freeze its policy before final evaluation. **Do not optimize
+**Decision (C, before the final run): the primary review cost is c = 5 amount units**
+(about 3.5% of the average validation fraud amount, 142.5; break-even precision about 3.5%).
+c = 1, 10, 20 are reported only as sensitivity checks. Choose the assumed c and freeze its policy before final evaluation. **Do not optimize
 k or thresholds on test labels.** The validation curves are optimistic because the
 same validation labels selected models and policies. The final test script and
 one-time evaluation remain C's responsibility.
