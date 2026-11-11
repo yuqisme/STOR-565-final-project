@@ -1,9 +1,10 @@
 """
-run_if.py  --  Isolation Forest: sklearn defaults vs. a larger forest, validation only.
+run_if.py  --  Isolation Forest: sklearn defaults vs. larger forests, validation only.
 
 Configs (psi = max_samples):
     default        100 trees, psi = 256     (sklearn defaults; the control)
-    t200_psi10000  200 trees, psi = 10000
+    t200_psi4096   200 trees, psi = 4096    (the team's "IF tuned" choice)
+    t200_psi10000  200 trees, psi = 10000   (comparison)
 Each is fit on the train split for 5 seeds and scored on the validation split with
 -score_samples (higher = more anomalous). Reports mean +/- std of AUPRC and recall@k.
 
@@ -33,6 +34,7 @@ FIGURES_DIR = ROOT / "figures"
 SEEDS = range(5)
 CONFIGS = {
     "default": dict(n_estimators=100, max_samples=256),
+    "t200_psi4096": dict(n_estimators=200, max_samples=4096),
     "t200_psi10000": dict(n_estimators=200, max_samples=10000),
 }
 
