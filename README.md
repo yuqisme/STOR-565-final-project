@@ -29,22 +29,17 @@ Because fraud is extremely rare (about 0.17% of transactions), accuracy is misle
 │   ├── data_loader.py           # Shared data loader
 │   ├── make_random_split.py     # Kaggle download -> dedup -> random 60/20/20 split
 │   ├── eval_utils.py            # C: evaluation metrics
+│   ├── check_split.py           # E: sanity check + fingerprints of the split files
+│   ├── toy_1d.py                # A: 1-2-3-4-100 toy example (exact E[h], score)
+│   ├── demo_2d.py               # A: 2D isolation-tree demo figures
 │   ├── run_if.py                # C: IF default vs. 200 trees / psi=10000
-│   ├── tune_if.py               # C: IF hyperparameter grid
-│   ├── scaling_experiment.py    # C: scaling experiment
-│   ├── baseline_utils.py        # D: train-only pipelines and shared helpers
-│   ├── run_logistic.py          # D: logistic C / class-weight grid
-│   ├── run_knn.py               # D: unsupervised distance, k / Time grid
-│   ├── run_xgboost.py           # D: supervised imbalance-weight comparison
-│   ├── compare_baselines.py     # D: refits, combined table, failure analysis
-│   └── fraud_amount_analysis.py # D: review budgets and cost policies
-├── BASELINES_NOTES.md           # D: concise report/slide notes
-├── BASELINES_HANDOFF.md         # D: exact final-fit and policy instructions for C
-├── AI_USE_NOTES_D.md            # D: AI contribution and human review checklist
-├── requirements.txt            # Pinned experiment dependencies
+│   ├── tune_if.py               # C: IF grid over psi x n_estimators (validation only)
+│   └── scaling_experiment.py    # C: scaling experiment
 ├── results/                     # Experiment results
 ├── figures/                     # Figures for slides and report
-└── tests/
+├── tests/                       # pytest unit tests (synthetic data, no real data needed)
+├── test.py                      # quick row/fraud counts of the three split files
+└── requirements.txt
 ```
 
 ## Setup
@@ -55,17 +50,8 @@ cd STOR-565-final-project
 python -m venv .venv
 source .venv/bin/activate        # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
+python -m pytest -q              # unit tests, no real data needed
 ```
-
-Use Python 3.9–3.12 with the pinned requirements for these runs. On macOS,
-XGBoost requires an OpenMP runtime (normally `brew install libomp`). In a local
-virtual environment with scikit-learn's bundled OpenMP, this alternative also works:
-
-```bash
-export DYLD_LIBRARY_PATH="$(python -c 'import pathlib, sklearn; print(pathlib.Path(sklearn.__file__).parent / ".dylibs")')${DYLD_LIBRARY_PATH:+:$DYLD_LIBRARY_PATH}"
-```
-
-No dataset CSVs, model score arrays or fitted models are committed.
 
 ## Data
 
@@ -86,6 +72,16 @@ python src/make_random_split.py
 ```
 
 The dataset is not committed to GitHub. It can be downloaded from Kaggle or accessed through the shared Google Drive folder.
+If you use the Drive files, put `train.csv`, `validation.csv` and `test.csv` in `data/random_split/`.
+
+Either way, check that you have the shared split:
+
+```bash
+python src/check_split.py
+```
+
+It should report 170,235 / 56,745 / 56,746 rows (284 / 94 / 95 frauds) and
+"matches shared split" for all three files.
 
 ## Conventions (everyone follows these)
 
@@ -99,21 +95,24 @@ The dataset is not committed to GitHub. It can be downloaded from Kaggle or acce
 
 ## How to reproduce results
 
-Place the team's existing `train.csv` and `validation.csv` in `data/random_split/`.
-The commands below never open the real test split. To generate a fresh split from
-the raw source separately, use `python src/make_random_split.py`; do not overwrite
-the team's frozen split while reproducing the published baseline results.
+Run from the repository root. Verified end to end on 2026-11-09: the scripts below
+reproduce the committed `results/*.csv` exactly.
 
 ```bash
-python src/run_if.py                        # IF configs on validation set
-python src/tune_if.py                       # optional: rebuild existing IF tuning table
-python src/scaling_experiment.py            # scaling experiment
-python src/run_logistic.py                  # required baseline, 10 validation configs
-python src/run_knn.py                       # required distance baseline, 5 seeds
-python src/run_xgboost.py                   # supervised XGBoost, 2 weights x 5 seeds
-python src/compare_baselines.py             # requires all 3 tuning scripts + IF grid
-python src/fraud_amount_analysis.py         # requires comparison's local score cache
-python -m pytest -q                        # synthetic data only
+python src/make_random_split.py   # one-time (or use the Drive files): data/random_split/
+python src/check_split.py         # confirm you have the shared split
+python src/run_if.py              # IF default vs. t200_psi10000, validation, ~20 s
+python src/scaling_experiment.py  # scaling experiment, validation, ~20 s
+python src/tune_if.py             # IF grid psi x n_estimators, validation, several minutes
+python src/toy_1d.py              # slides: 1-2-3-4-100 toy example, a few seconds
+python src/demo_2d.py             # slides: 2D isolation demo figures, a few seconds
+```
+
+Still to add (TODO):
+
+```bash
+python src/baselines.py           # D: kNN, PCA, logistic regression (validation)
+python src/final_test.py          # C: final test-set run, once only
 ```
 
 Outputs go to `results/` and `figures/`. The selected configuration JSON files are
@@ -150,4 +149,3 @@ cross-checked by a teammate.
 ## References
 
 - Liu, F. T., Ting, K. M., & Zhou, Z.-H. (2008). Isolation Forest. *IEEE ICDM*.
--565-final-project
