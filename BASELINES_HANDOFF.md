@@ -3,6 +3,12 @@
 Prepared for Zihan Zhao (D), November 11, 2026. Source base commit:
 `d5db4fcf71f2514f9d8b1444afce0b6c099362fe`. No real test file was extracted or read.
 
+> **Status update (November 12, 2026).** C ran the final test once on November 11 with the
+> configurations and policies frozen below (primary review cost c = 5; "IF tuned" = 200 trees,
+> psi = 4096), using `src/final_test.py` at commit `3599a1f`. Results are in
+> `results/final_test_*.csv` and `results/summary_val_test.csv` and are final: do not rerun or
+> retune. The rest of this document describes what was frozen before that run (plus C's c = 5 decision).
+
 ## Exact fits and score direction
 
 Use `results/baselines_selected.json` for configs, Python/package versions and

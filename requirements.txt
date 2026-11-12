@@ -1,6 +1,6 @@
 # Install with: pip install -r requirements.txt
 # Last checked with Python 3.14 and numpy 2.5.4, pandas 3.1.1, scikit-learn 1.9.1,
-# matplotlib 3.11.2, pytest 9.2.0, xgboost 2.1.4 (all 74 unit tests pass).
+# matplotlib 3.11.2, pytest 9.2.0, xgboost 2.1.4 (all 86 unit tests pass).
 # D's committed baseline results were produced with older versions (see
 # results/baselines_selected.json: Python 3.9, numpy 1.26, scikit-learn 1.6).
 numpy

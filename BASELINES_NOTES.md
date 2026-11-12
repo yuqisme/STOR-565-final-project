@@ -51,3 +51,10 @@ predeclared seed 0, not mean scores or the best seed. Calibration, bootstrap
 intervals, expected-loss ranking and final testing are omitted. Exact settings,
 package/data fingerprints and cutoffs: `results/*_selected.json`,
 `results/fraud_cost_val.csv`, `BASELINES_HANDOFF.md`.
+
+**Update, November 12 (final test, run by C on November 11).** The frozen configurations above were refit
+on the train split and scored once on the test split (95 frauds; details in `BASELINES_HANDOFF.md`).
+Test AUPRC, mean over seeds 0-4: IF default .118, IF tuned .243, kNN .156, logistic .754 (deterministic),
+XGBoost .875. Cost saving at the primary c = 5 with the validation-frozen thresholds: IF default 26.9%,
+IF tuned 16.3%, kNN 45.8%, logistic 85.4%, XGBoost 84.2%. The validation conclusions above are not
+revised. Side-by-side tables: `results/summary_val_test.csv`; sources: `results/final_test_*.csv`.
