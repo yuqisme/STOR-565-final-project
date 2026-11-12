@@ -44,7 +44,7 @@ Because fraud is extremely rare (about 0.17% of transactions), accuracy is misle
 │   ├── compare_baselines.py     # D: refit selected models, comparison table, failure cases
 │   ├── fraud_amount_analysis.py # D: review budgets and cost policies (raw Amount)
 │   ├── final_test.py            # C: the single final test-set run (needs --run-final-test)
-│   ├── make_summary.py          # C: validation + test results in one table
+│   ├── make_summary.py          # C: validation + test results in one table and figure
 │   ├── toy_1d.py                # A: 1-2-3-4-100 toy example (exact E[h], score)
 │   └── demo_2d.py               # A: 2D isolation-tree demo figures
 ├── results/                     # tables (csv); final_test_*.csv and summary_val_test.csv are final
@@ -172,6 +172,8 @@ Test numbers are final: nothing was tuned on them.
 | kNN distance | no | 0.173 ± 0.002 | 0.156 ± 0.001 | 0.266 | 0.238 | 0.413 | 0.366 | 40.9% | 45.8% |
 | Logistic regression | yes | 0.743 | 0.754 | 0.766 | 0.779 | 0.840 | 0.863 | 62.9% | 85.4% |
 | XGBoost | yes | 0.834 ± 0.001 | 0.875 ± 0.002 | 0.821 | 0.848 | 0.843 | 0.895 | 67.3% | 84.2% |
+
+![Validation vs. test](figures/summary_val_test.png)
 
 With only 94-95 frauds per split, differences of a few hundredths in AUPRC are within noise;
 the seed std is not a confidence interval. See `BASELINES_NOTES.md` for baseline settings.

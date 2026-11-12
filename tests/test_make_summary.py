@@ -44,3 +44,9 @@ def test_markdown_hides_std_when_deterministic():
     md = ms.to_markdown(ms.build_summary(VAL, same_order, COST_V, COST_T)).splitlines()
     assert md[0].startswith("| Method |") and len(md) == 4
     assert "±" in md[2] and "±" not in md[3]        # A has std 0.01, B has std 0 (deterministic)
+
+
+def test_plot_summary_writes_png(tmp_path):
+    out = tmp_path / "s.png"
+    ms.plot_summary(ms.build_summary(VAL, _metrics(MODELS, 0.2), COST_V, COST_T), out)
+    assert out.exists() and out.stat().st_size > 1000
