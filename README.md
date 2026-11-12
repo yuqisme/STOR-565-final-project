@@ -92,10 +92,14 @@ python src/check_split.py
 ```
 
 It should report 170,235 / 56,745 / 56,746 rows (284 / 94 / 95 frauds). The Drive files
-should also show "matches shared split" for all three SHA-256 fingerprints. Files
-regenerated with `make_random_split.py` have the same sizes, but their train and
-validation fingerprints currently differ from the Drive files' (the script flags
-this), so fingerprints only identify the Drive copy.
+should also show "matches shared split" for all three SHA-256 fingerprints.
+Regenerating the split with `make_random_split.py` from the Kaggle file (Version 3) gives
+byte-identical files with Python 3.13, numpy 2.5.3, pandas 3.0.5 (checked 2026-11-09 and
+2026-11-12). With other library versions the CSV bytes can differ while the values are the
+same: the baselines were tuned on files whose fingerprints differ from the Drive copy (see
+`data_sha256` in `results/baselines_selected.json`), yet IF, kNN and logistic regression
+reproduce exactly from the Drive files. So a fingerprint mismatch alone does not mean a
+different split; the row and fraud counts plus the reproduced results do.
 
 ## Conventions (everyone follows these)
 
@@ -112,9 +116,26 @@ this), so fingerprints only identify the Drive copy.
 
 ## How to reproduce results
 
-Run from the repository root. On 2026-11-09 the validation scripts of that day reproduced
-the committed `results/*.csv` exactly; `scaling_experiment.py`, `final_test.py` and
-`make_summary.py` were added or changed later and have not been re-run from a clean checkout.
+Run from the repository root.
+
+**Reproducibility check (2026-11-12, E):** every validation script below was re-run in order
+from a clean checkout of `main` (commit `cc1c3ef`) on the Drive split (Linux x86-64,
+Python 3.13, numpy 2.5.3, pandas 3.0.5, scikit-learn 1.9.1), and the outputs were compared
+with the committed `results/*.csv`:
+
+- **Reproduced exactly** (differences ≤ 1e-8, i.e. floating-point rounding): IF (`run_if.py`,
+  `tune_if.py`, `scaling_experiment.py`), kNN, logistic regression, the 1D toy example, and every
+  non-XGBoost row of `compare_baselines.py`. The committed result files were left unchanged.
+- **XGBoost differs slightly across machines:** validation AUPRC differs by up to 0.004 from the
+  committed values (e.g. 0.8358 vs. 0.8335 for seed 0), with the same selected configuration
+  and the same ranking of methods. This persists with the committed XGBoost version (2.1.4).
+  Within one machine XGBoost is fully deterministic (identical across repeated runs and thread
+  counts), so the difference is most likely floating-point behaviour across CPU platforms; the
+  committed baseline results were produced on macOS (see `results/baselines_selected.json`).
+  XGBoost-derived numbers (cost policies, failure counts by model, summary table) shift
+  accordingly; conclusions do not change.
+- `final_test.py` was **not** re-run (test set is used once; results frozen on 2026-11-11).
+  `make_summary.py` runs on the committed test results.
 
 ```bash
 python src/make_random_split.py   # one-time (or use the Drive files): data/random_split/
